@@ -35,13 +35,10 @@ router.post('/add', async(req, res) => {
             res.status(200).json({ message: "Session added sucessfully....!", status: true, statCode: 200, })
         } else {
             res.status(400).json({ message: "Something went wrong", status: false, statCode: 400, })
-
         }
-
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: "something went wrong", status: false, statuCode: 500 })
-
     }
 });
 
@@ -107,6 +104,7 @@ router.get('/get', async(req, res) => {
                     'new': 1,
                     'answersId': 1,
                     'total_session': 1,
+                    'status':1
                 }
             }]
         )

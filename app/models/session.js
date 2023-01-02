@@ -45,6 +45,10 @@ const SessionScema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    status: {
+        type: Number,
+        default: 1
+    },
     answersId: {
         type: mongoose.Schema.Types.ObjectId
     }

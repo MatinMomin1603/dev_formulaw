@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const LawyerModel = require('../../models/lawyer');
+const specializationModel = require('../../models/specialities');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const otpHelper = require('../../../helpers/otp');
@@ -168,13 +169,15 @@ router.get('/getLawyers', async(req, res) => {
 
 router.get('/list', async(req, res) => {
     try {
-        const { status } = req.query;
-        if (typeof status == null || status == undefined || status == '')
-            return res.status(400).json({ message: "try again", status: false, statusCode: 400 });
+        const { status, is_Online } = req.query;
+        let match = {}
+        if(is_Online)
+          match.is_Online = (is_Online.toLowerCase() === 'true');
+        if(status)
+          match.isApproved = status;
+
         let client = await LawyerModel.aggregate([{
-            '$match': {
-                'isApproved': status
-            }
+            '$match': match
         }, {
             '$project': {
                 'firstName': 1,
@@ -192,20 +195,16 @@ router.get('/list', async(req, res) => {
             }
         }])
         if (client) {
-
             res.status(200).json({ message: "Data found", status: true, statusCode: 200, data: client })
         } else {
-
             res.status(400).json({ message: "Something Went Wrong", status: false, statusCode: 400 })
         }
 
     } catch (error) {
-        console.log(error)
+        console.log(error);
         res.status(500).json({ message: "Something Went Wrong", status: false, statusCode: 500 })
-
     }
 });
-
 
 router.put('/updateStatus',  async(req, res) => {
     try {
@@ -270,8 +269,13 @@ router.put('/editLawyer', isValidToken, async(req, res) => {
 router.post('/addlawyer', isValidToken, async(req, res) => {
     try {
         let resume_path;
-        const { name, email, phoneNo, state, city, resume, langauge, firmName, extension, specialization, } = req.body
-        const lawyerdata = await LawyerModel({ name: name, email: email, phoneNo: phoneNo, state: state, city: city, resume: resume_path, langauge: langauge, firmName: firmName, specialization: specialization }).save()
+        let finalSpecialization = [];
+        const { name, email, phoneNo, state, city, resume, langauge, firmName, extension, specialization, } = req.body;
+        let specialities = await specializationModel.find();
+       specialization.forEach((element)=>{
+        finalSpecialization =  specialities.filter((element1)=>{return element1._id == element})
+         });
+        const lawyerdata = await LawyerModel({ name: name, email: email, phoneNo: phoneNo, state: state, city: city, resume: resume_path, langauge: langauge, firmName: firmName, specialization: finalSpecialization }).save()
         if (lawyerdata) {
             let resume_path = "lawyer/resume/" + lawyerdata._id + '.' + extension.split('/')[1];
             await fileUploadBase64(resume_path, resume, extension);
