@@ -167,7 +167,7 @@ router.get('/getLawyers', async(req, res) => {
     }
 });
 
-router.get('/list', async(req, res) => {
+router.get('/list',isValidToken, async(req, res) => {
     try {
         const { status, is_Online } = req.query;
         let match = {}
@@ -191,7 +191,8 @@ router.get('/list', async(req, res) => {
                 'updatedOn': 1,
                 'login_last': 1,
                 'is_login': 1,
-                'isApproved': 1
+                'isApproved': 1,
+                'specialization': 1
             }
         }])
         if (client) {

@@ -128,9 +128,9 @@ router.get('/getUserDetails', isValidToken ,async(req,res)=>{
             'pincodeNo':1,
             'gender':1,
             'is_login':1,
-            'profileImage': {
-                 $ifNull: [{ $concat: ["https://formulaw.s3.ap-south-1.amazonaws.com/", "$profileImage"] }, ""] 
-            }
+            'profileImage':  {
+                $cond: { if: { $eq: [ "$profileImage", '' ] }, then: null, else: { $concat: ["https://formulaw.s3.ap-south-1.amazonaws.com/", "$profileImage"]} }
+              }
         }
     }
     ])

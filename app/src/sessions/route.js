@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router();
 const mongoose = require('mongoose');
 
-const sessionSchema = require('../../models/session');
+const sessionModel = require('../../models/session');
 
 
 router.post('/add', async(req, res) => {
@@ -21,7 +21,7 @@ router.post('/add', async(req, res) => {
         //     count: 0,
         //     createdOn: new Date()
         // }]
-        const data = new sessionSchema({
+        const data = new sessionModel({
             userId: mongoose.Types.ObjectId(userId),
             // lawyerId: mongoose.Types.ObjectId(lawyerId),
             // lawyerName: lawyerName,
@@ -52,7 +52,7 @@ function validation(key) {
 router.get('/get', async(req, res) => {
     try {
 
-        let client = await sessionSchema.aggregate(
+        let client = await sessionModel.aggregate(
             [{
                 '$lookup': {
                     'from': 'users',
@@ -121,18 +121,37 @@ router.get('/get', async(req, res) => {
 
 });
 
+router.patch('/requestToLawyer',async(req,res)=>{
+    try {
+        const {_id,lawyerId,lawyerName} = req.body;
+        let request = await sessionModel({_id},{$set:{lawyerId,lawyerName,status:2,updatedOn: new Date()}},{new:true});
+        if(request){
+           return res.status(200).json({status:true,statusCode:200,data: request,message:"Request Sent To Lawyer Successfully."})
+        }
+        else{
+           return res.status(400).json({ message: "Something Went Wrong..", status: false, statusCode: 400 })
+        }
+    } catch (error) {
+    console.log('error :', error);
+        res.status(500).json({ message: "Something Went Wrong..", status: false, statusCode: 500 })
+        
+    }
+  
+
+})
+
 
 router.put('/update', async(req, res) => {
     try {
         const _id = mongoose.Types.ObjectId(req.body._id)
 
-        let client = await sessionSchema.findOne({ _id });
+        let client = await sessionModel.findOne({ _id });
         let count = client.session.length + 1;
 
         if (count > 2) {
             return res.status(500).json({ message: "Maximum limit of Session is 2....!", status: false, statusCode: 500 })
         } else {
-            const data = await sessionSchema.updateOne({ _id }, {
+            const data = await sessionModel.updateOne({ _id }, {
 
                 "$push": {
                     "session": {
@@ -163,7 +182,7 @@ router.put('/updateCount', async(req, res) => {
     try {
 
         const _id = mongoose.Types.ObjectId(req.body._id)
-        let get = await sessionSchema.updateOne({ "session._id": _id }, {
+        let get = await sessionModel.updateOne({ "session._id": _id }, {
             "$set": {
                 "session.$.count": req.body.count
             }
@@ -186,7 +205,7 @@ router.delete('/:id', async(req, res) => {
     try {
         const _id = mongoose.Types.ObjectId(req.params.id)
 
-        const get = await sessionSchema.deleteOne({ _id });
+        const get = await sessionModel.deleteOne({ _id });
         if (get) {
             res.status(200).json({ message: "Session Deleted Sucessfully...!", status: true, statCode: 200 });
         } else {
