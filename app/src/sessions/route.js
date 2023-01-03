@@ -4,7 +4,12 @@ const mongoose = require('mongoose');
 
 const sessionModel = require('../../models/session');
 
-
+// status maintained for seesion
+// 1-: pending * status updated by user
+// 2-: requested  * status updated by Admin
+// 3-: accepted * status updated by Lawyer
+// 4-: allocated * status updated by Admin
+// 0-: rejected * status updated by Lawyer
 router.post('/add', async(req, res) => {
     try {
 
