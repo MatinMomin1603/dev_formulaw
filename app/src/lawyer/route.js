@@ -270,6 +270,7 @@ router.put('/editLawyer', isValidToken, async(req, res) => {
 router.post('/addlawyer', isValidToken, async(req, res) => {
     try {
         let resume_path;
+        let update;
         let finalSpecialization = [];
         const { name, email, phoneNo, state, city, resume, langauge, firmName, extension, specialization, } = req.body;
         let specialities = await specializationModel.find();
@@ -281,7 +282,7 @@ router.post('/addlawyer', isValidToken, async(req, res) => {
             if(resume){
                 let resume_path = "lawyer/resume/" + lawyerdata._id + '.' + extension.split('/')[1];
                 await fileUploadBase64(resume_path, resume, extension);
-                let update = await LawyerModel.findByIdAndUpdate({ _id: mongoose.Types.ObjectId(lawyerdata._id) }, { $set: { resume: resume_path } }, { new: true })
+                update = await LawyerModel.findByIdAndUpdate({ _id: mongoose.Types.ObjectId(lawyerdata._id) }, { $set: { resume: resume_path } }, { new: true })
             }
            
             res.status(200).json({ message: "lawyer Add Sucessfully...!", status: true, statusCode: 200, data: resume? update : lawyerdata})
