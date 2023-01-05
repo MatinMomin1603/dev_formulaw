@@ -33,17 +33,17 @@ router.post('/add', async(req, res) => {
             issue: issue,
             // session: session,
             answersId: answersId,
-            new: true
+            new: false
         });
         let get = await data.save()
         if (get) {
-            res.status(200).json({ message: "Session added sucessfully....!", status: true, statCode: 200, })
+            res.status(200).json({ message: "Session added sucessfully....!", status: true, statusCode: 200, })
         } else {
-            res.status(400).json({ message: "Something went wrong", status: false, statCode: 400, })
+            res.status(400).json({ message: "Something went wrong", status: false, statusCode: 400, })
         }
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "something went wrong", status: false, statuCode: 500 })
+        res.status(500).json({ message: "something went wrong", status: false, statusCode: 500 })
     }
 });
 
@@ -114,7 +114,7 @@ router.get('/get', async(req, res) => {
             }]
         )
         if (client) {
-            res.status(200).json({ message: "Data Found Sucessfully...!", status: true, statCode: 200, data: client })
+            res.status(200).json({ message: "Data Found Sucessfully...!", status: true, statusCode: 200, data: client })
         } else {
             res.status(400).json({ message: "Something went wrong...!", status: false, statusCode: 400 })
         }
@@ -138,12 +138,43 @@ router.patch('/requestToLawyer',async(req,res)=>{
         }
     } catch (error) {
     console.log('error :', error);
-        res.status(500).json({ message: "Something Went Wrong..", status: false, statusCode: 500 })
-        
+        res.status(500).json({ message: "Something Went Wrong..", status: false, statusCode: 500 }) 
     }
-  
+});
 
-})
+router.patch('/reqAcceptOrReject', async(req, res) => {
+    try {
+        const { _id, status } = req.body
+        let operation = status == 3 ? 'Accepted' : 'Rejected'
+        let check = await sessionModel.findByIdAndUpdate({ _id }, { $set: { status, updatedOn: new Date() } }, { new: true })
+        if (check) {
+            res.status(200).json({ message: `Request ${operation}..`, status: true, statusCode: 200 })
+        } else {
+            res.status(400).json({ message: "Something Went Wrong", status: true, statusCode: 400, statsu: false,})
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Something Went Wrong", status: 500, statusCode: 500 })
+    }
+});
+
+
+// lawyer allocation
+
+router.patch('/allocateLawyer', async(req, res) => {
+    try {
+        const { _id, lawyerId, lawyerName } = req.body;
+        let request = await sessionModel.findByIdAndUpdate({ _id }, { $set: { lawyerId, lawyerName, status: 4, updatedOn: new Date() } }, { new: true });
+        if (request) {
+            return res.status(200).json({ status: true, statusCode: 200, data: request, message: "Lawyer Allocated Successfully...!" })
+        } else {
+            return res.status(400).json({ message: "Something Went Wrong...!", status: false, statusCode: 400 })
+        }
+    } catch (error) {
+        console.log('error :', error);
+        res.status(500).json({ message: "Something Went Wrong...!", status: false, statusCode: 500 })
+    }
+});
 
 
 router.put('/update', async(req, res) => {
@@ -212,14 +243,13 @@ router.delete('/:id', async(req, res) => {
 
         const get = await sessionModel.deleteOne({ _id });
         if (get) {
-            res.status(200).json({ message: "Session Deleted Sucessfully...!", status: true, statCode: 200 });
+            res.status(200).json({ message: "Session Deleted Sucessfully...!", status: true, statusCode: 200 });
         } else {
-            res.status(400).json({ message: "something went wrong...!", status: false, statCode: 400, error });
+            res.status(400).json({ message: "something went wrong...!", status: false, statusCode: 400, error });
         }
     } catch (error) {
         console.log('error', error)
-        res.status(500).json({ message: "Something went wrong", status: false, statCode: 500 })
-
+        res.status(500).json({ message: "Something went wrong", status: false, statusCode: 500 })
     }
 })
 

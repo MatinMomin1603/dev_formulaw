@@ -14,7 +14,6 @@ const SessionScema = new mongoose.Schema({
 
     issue: {
         type: String
-
     },
 
     createdOn: {
@@ -40,6 +39,7 @@ const SessionScema = new mongoose.Schema({
     },
     new: {
         type: Boolean,
+        default: false
     },
     total_session: {
         type: Number,

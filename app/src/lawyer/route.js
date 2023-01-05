@@ -278,10 +278,13 @@ router.post('/addlawyer', isValidToken, async(req, res) => {
          });
         const lawyerdata = await LawyerModel({ name: name, email: email, phoneNo: phoneNo, state: state, city: city, resume: resume_path, langauge: langauge, firmName: firmName, specialization: finalSpecialization }).save()
         if (lawyerdata) {
-            let resume_path = "lawyer/resume/" + lawyerdata._id + '.' + extension.split('/')[1];
-            await fileUploadBase64(resume_path, resume, extension);
-            let update = await LawyerModel.findByIdAndUpdate({ _id: mongoose.Types.ObjectId(lawyerdata._id) }, { $set: { resume: resume_path } }, { new: true })
-            res.status(200).json({ message: "lawyer Add Sucessfully...!", status: true, statusCode: 200, data: update })
+            if(resume){
+                let resume_path = "lawyer/resume/" + lawyerdata._id + '.' + extension.split('/')[1];
+                await fileUploadBase64(resume_path, resume, extension);
+                let update = await LawyerModel.findByIdAndUpdate({ _id: mongoose.Types.ObjectId(lawyerdata._id) }, { $set: { resume: resume_path } }, { new: true })
+            }
+           
+            res.status(200).json({ message: "lawyer Add Sucessfully...!", status: true, statusCode: 200, data: resume? update : lawyerdata})
         } else {
             res.status(400).json({ message: "Something Went Wrong..!", status: false, statusCode: 400 })
         }

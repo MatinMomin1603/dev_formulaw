@@ -71,7 +71,7 @@ router.put('/editUser', isValidToken, async(req, res) => {
 
         let client = await user.findByIdAndUpdate({ _id }, { firstName: firstName, lastName: lastName, email: email, gender: gender, profileImage: profile_path, pincodeNo: pincodeNo, updatedOn: new Date() }, { new: true })
         if (client) {
-            client.profileImage = 'https://formulaw.s3.ap-south-1.amazonaws.com' + client.profileImage;
+            client.profileImage = 'https://formulaw.s3.ap-south-1.amazonaws.com/' + client.profileImage;
             res.status(200).json({ message: "User Updated Sucessfully...!", status: true, statusCode: 200, data: client })
         } else {
             res.status(400).json({ message: "Something Went Wrong..!", status: false, statusCode: 400 })
