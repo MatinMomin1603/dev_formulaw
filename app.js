@@ -9,8 +9,8 @@ app.use(cors({
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, PATCH, DELETE',
     'Access-Control-Allow-Headers': 'X-Requested-With,content-type' 
 }));
-app.use(bodyParser.json({ limit: '50mb' }));
-app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 const db = require("./config/db");
 const { authRouter, questionRouter, answerRouter, articalRouter, bannerRouter, lawyerRouter, langRouter, statecityRouter, adminRouter, userRouter, specialityRouter, sessionRouter } = require('./app/src')
 

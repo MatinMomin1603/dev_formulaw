@@ -82,6 +82,9 @@ router.post('/verifyOtp', async(req, res) => {
             else if (!(check.otp == req.body.otp)) {
                 return res.status(400).json({ message: "Invalid otp", status: false, statusCode: 400 })
             } else {
+                if(check.lawyerimage) check.lawyerimage = 'https://formulaw.s3.ap-south-1.amazonaws.com/' + check.lawyerimage;
+                if(check.resume) check.resume = 'https://formulaw.s3.ap-south-1.amazonaws.com/' + check.resume;
+
                 await LawyerModel.updateOne({ phoneNo: req.body.phoneNo }, { is_login: true, login_last: new Date(), updatedOn: new Date() });
                 let token = jwt.sign({ _id: check._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN })
                 res.status(200).json({ message: "Lawyer verified successfully", status: true, statusCode: 200, data: check, access_token: token, signup: signup });
@@ -182,6 +185,7 @@ router.get('/list',isValidToken, async(req, res) => {
             '$project': {
                 'firstName': 1,
                 'lastName': 1,
+                'name': 1,
                 'email': 1,
                 'phoneNo': 1,
                 'state': 1,
@@ -192,7 +196,10 @@ router.get('/list',isValidToken, async(req, res) => {
                 'login_last': 1,
                 'is_login': 1,
                 'isApproved': 1,
-                'specialization': 1
+                'specialization': 1,
+                'firmName':1,
+                'is_Online':1,
+                'experience':1
             }
         }])
         if (client) {
@@ -294,6 +301,54 @@ router.post('/addlawyer', isValidToken, async(req, res) => {
         res.status(500).json({ meessage: "Something Went Wrong...!", status: false, statusCode: 500 })
     }
 });
+
+router.get('/search', isValidToken, async(req,res)=>{
+    try {
+        const { text } = req.query;
+
+        let check = await LawyerModel.aggregate([
+          {'$match': {
+            '$and': [
+               {
+                'isApproved': {$eq: 'approved'}
+               },
+               {
+                '$or': [
+                    { 'name': { $regex: text, '$options': 'i' } },
+                    { 'specialization.name': { $regex: text, '$options': 'i' } },
+                ]
+               }
+            ]
+            
+          }
+        },
+        {'$project': {
+            name: 1,
+            email: 1,
+            phoneNo:1,
+            state: 1,
+            city: 1,
+            langauge: 1,
+            login_last: 1,
+            is_login: 1,
+            isApproved: 1,
+            resume: {$cond: {if: {$eq: ['$resume','']},then: null,else:{$concat: ["https://formulaw.s3.ap-south-1.amazonaws.com/", "$resume"]}}},
+            specialization: 1,
+            is_Online: 1
+        }}
+        ]
+        )
+        if(check)
+           return res.status(200).json({ message: check.length > 0?"Record Found...!": "No Record Found...!", status: true, statusCode: 200, data: check })
+        else 
+           return res.status(400).json({ meessage: "Something Went Wrong...!", status: false, statusCode: 400 })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ meessage: "Something Went Wrong...!", status: false, statusCode: 500 })
+    }
+
+});
+
 
 // [
 //     {

@@ -78,6 +78,7 @@ router.post('/verifyOtp', async(req, res) => {
                 return res.status(400).json({ message: "Invalid otp", status: false, statusCode: 400 })
             } 
             else {
+                if(check.profileImage) check.profileImage = 'https://formulaw.s3.ap-south-1.amazonaws.com/' + check.profileImage;
                 await userSchema.updateOne({ phoneNo: req.body.phoneNo }, { is_login: true, login_last: new Date(), updatedOn: new Date() });
                 let token = jwt.sign({ _id: check._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN })
                 res.status(200).json({ message: "User verified successfully", status: true, statusCode: 200, data: check, access_token: token, signup: signup });

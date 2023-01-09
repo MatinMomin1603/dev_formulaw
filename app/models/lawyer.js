@@ -90,7 +90,7 @@ const LawyerSchema = new mongoose.Schema({
     
     is_Online: {
         type: Boolean,
-        default: false
+        default: true
     }
 });
 

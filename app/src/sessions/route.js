@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router();
 const mongoose = require('mongoose');
+const {isValidToken} = require('../../../middlewares/auth')
 
 const sessionModel = require('../../models/session');
 
@@ -10,7 +11,7 @@ const sessionModel = require('../../models/session');
 // 3-: accepted * status updated by Lawyer
 // 4-: allocated * status updated by Admin
 // 0-: rejected * status updated by Lawyer
-router.post('/add', async(req, res) => {
+router.post('/add',isValidToken, async(req, res) => {
     try {
 
         const { userId, lawyerName, issue, lawyerId, answersId } = req.body;
@@ -54,11 +55,15 @@ function validation(key) {
 }
 
 
-router.get('/get', async(req, res) => {
+router.get('/get',isValidToken, async(req, res) => {
     try {
-
+        let match = {};
+        if(req.query.id) match._id = mongoose.Types.ObjectId(req.query.id);
+        
         let client = await sessionModel.aggregate(
             [{
+                $match: match
+            },{
                 '$lookup': {
                     'from': 'users',
                     'localField': 'userId',
@@ -109,7 +114,9 @@ router.get('/get', async(req, res) => {
                     'new': 1,
                     'answersId': 1,
                     'total_session': 1,
-                    'status':1
+                    'status':1,
+                    'current_session_paid': 1,
+                    'session_completed':1
                 }
             }]
         )
@@ -180,36 +187,29 @@ router.patch('/allocateLawyer', async(req, res) => {
 router.put('/update', async(req, res) => {
     try {
         const _id = mongoose.Types.ObjectId(req.body._id)
-
         let client = await sessionModel.findOne({ _id });
-        let count = client.session.length + 1;
-
-        if (count > 2) {
+        let count = client.total_session;
+        if (count > 3) {
             return res.status(500).json({ message: "Maximum limit of Session is 2....!", status: false, statusCode: 500 })
         } else {
             const data = await sessionModel.updateOne({ _id }, {
-
                 "$push": {
                     "session": {
                         _id: mongoose.Types.ObjectId(),
                         count: count,
                         createdOn: new Date()
-
                     }
                 }
             })
-
             if (data) {
-                res.status(200).json({ message: "updated", status: true, statCode: 200 });
-
+                res.status(200).json({ message: "Updated Sessions", status: true, statCode: 200 });
             } else {
-                res.status(400).json({ messsage: "Not found...", status: false, statCode: 400 })
+                res.status(400).json({ messsage: "Something Went Wrong...", status: false, statCode: 400 })
             }
         }
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "something went wrong...", status: false, statCode: 500 })
-
+        res.status(500).json({ message: "Something Went Wrong...", status: false, statCode: 500 })
     }
 })
 

@@ -51,7 +51,19 @@ const SessionScema = new mongoose.Schema({
     },
     answersId: {
         type: mongoose.Schema.Types.ObjectId
-    }
+    },
+    current_session_paid:{
+        type: Boolean,
+        default: true
+    },
+    session_completed:{
+        type: Boolean,
+        default: false
+    },
+    payments: [{
+        _id: {
+            type: mongoose.Schema.Types.ObjectId,
+        }}]
 });
 
 module.exports = mongoose.model("session", SessionScema);
