@@ -121,7 +121,7 @@ router.get('/get',isValidToken, async(req, res) => {
             }]
         )
         if (client) {
-            res.status(200).json({ message: "Data Found Sucessfully...!", status: true, statusCode: 200, data: client })
+            res.status(200).json({ message: "Data Found Sucessfully...!", status: true, statusCode: 200, data: client, totalCount: client.length + 1 })
         } else {
             res.status(400).json({ message: "Something went wrong...!", status: false, statusCode: 400 })
         }
@@ -188,11 +188,11 @@ router.put('/update', async(req, res) => {
     try {
         const _id = mongoose.Types.ObjectId(req.body._id)
         let client = await sessionModel.findOne({ _id });
-        let count = client.total_session;
+        let count = client.total_session + 1;
         if (count > 3) {
-            return res.status(500).json({ message: "Maximum limit of Session is 2....!", status: false, statusCode: 500 })
+            return res.status(500).json({ message: "Maximum limit of Session is 3....!", status: false, statusCode: 500 })
         } else {
-            const data = await sessionModel.updateOne({ _id }, {
+            const data = await sessionModel.updateOne({ _id },{$set: {current_session_paid: count == 1 ? false : true,current_session_paid: count >= 3 ? true: false}}, {
                 "$push": {
                     "session": {
                         _id: mongoose.Types.ObjectId(),

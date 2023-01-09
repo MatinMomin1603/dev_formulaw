@@ -33,6 +33,18 @@ const SessionScema = new mongoose.Schema({
             default: new Date(),
         },
     }],
+
+    userSessions:[{
+       status: {
+        type: Number,
+        default: 1,
+       },
+       requestdOn: {
+        type: Date,
+        default: 1,
+       }
+    }],
+
     updatedOn: {
         type: Date,
         default: new Date(),
