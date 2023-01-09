@@ -201,7 +201,9 @@ router.get('/list',isValidToken, async(req, res) => {
                 'is_Online':1,
                 'experience':1
             }
-        }])
+        },{
+            '$count': 'totalCount'
+          }])
         if (client) {
             res.status(200).json({ message: "Data found", status: true, statusCode: 200, data: client })
         } else {
