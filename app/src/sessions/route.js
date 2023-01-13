@@ -27,6 +27,10 @@ router.post('/add',isValidToken, async(req, res) => {
         //     count: 0,
         //     createdOn: new Date()
         // }]
+        const userSession = [{
+         status: 1,
+         requestedOn: new Date()
+        }];
         const data = new sessionModel({
             userId: mongoose.Types.ObjectId(userId),
             // lawyerId: mongoose.Types.ObjectId(lawyerId),
@@ -34,7 +38,8 @@ router.post('/add',isValidToken, async(req, res) => {
             issue: issue,
             // session: session,
             answersId: answersId,
-            new: false
+            new: false,
+            userSessions: userSession
         });
         let get = await data.save()
         if (get) {
@@ -55,15 +60,16 @@ function validation(key) {
 }
 
 
-router.get('/get',isValidToken, async(req, res) => {
+router.get('/get', isValidToken, async(req, res) => {
     try {
         let match = {};
-        if(req.query.id) match._id = mongoose.Types.ObjectId(req.query.id);
-        
+        if (req.query.id) match._id = mongoose.Types.ObjectId(req.query.id);
+        let { page, limit } = req.query
+
         let client = await sessionModel.aggregate(
             [{
                 $match: match
-            },{
+            }, {
                 '$lookup': {
                     'from': 'users',
                     'localField': 'userId',
@@ -114,19 +120,21 @@ router.get('/get',isValidToken, async(req, res) => {
                     'new': 1,
                     'answersId': 1,
                     'total_session': 1,
-                    'status':1,
+                    'status': 1,
                     'current_session_paid': 1,
-                    'session_completed':1
+                    'session_completed': 1
                 }
             }]
         )
         if (client) {
+            let client = await sessionModel.find({}).limit(limit).skip((page - 1) * limit);
             res.status(200).json({ message: "Data Found Sucessfully...!", status: true, statusCode: 200, data: client, totalCount: client.length + 1 })
         } else {
             res.status(400).json({ message: "Something went wrong...!", status: false, statusCode: 400 })
         }
 
     } catch (error) {
+        console.log(error)
         res.status(500).json({ message: "something went wrong...!", status: false, statusCode: 500 })
 
     }

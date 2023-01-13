@@ -11,6 +11,8 @@ const adminRouter = require('./admin/route');
 const userRouter = require('./user/route');
 const specialityRouter = require('./specialities/route');
 const sessionRouter = require('./sessions/route');
+const customerSupportRouter = require('./customerSupport/route');
+const askQuestionRouter = require('./askQuestion/route');
 
 module.exports = {
     authRouter,
@@ -24,5 +26,7 @@ module.exports = {
     adminRouter,
     userRouter,
     specialityRouter,
-    sessionRouter
+    sessionRouter,
+    customerSupportRouter,
+    askQuestionRouter
 }

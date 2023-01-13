@@ -22,6 +22,12 @@ const BannerSchema = new mongoose.Schema({
     updatedOn: {
         type: Date,
         default: new Date()
+    },
+    type: {
+        type: String
+    },
+    status: {
+        type: Boolean
     }
 
 });

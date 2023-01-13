@@ -170,14 +170,14 @@ router.get('/getLawyers', async(req, res) => {
     }
 });
 
-router.get('/list',isValidToken, async(req, res) => {
+router.get('/list', isValidToken, async(req, res) => {
     try {
-        const { status, is_Online } = req.query;
+        const { status, is_Online, page, limit } = req.query;
         let match = {}
-        if(is_Online)
-          match.is_Online = (is_Online.toLowerCase() === 'true');
-        if(status)
-          match.isApproved = status;
+        if (is_Online)
+            match.is_Online = (is_Online.toLowerCase() === 'true');
+        if (status)
+            match.isApproved = status;
 
         let client = await LawyerModel.aggregate([{
             '$match': match
@@ -197,13 +197,14 @@ router.get('/list',isValidToken, async(req, res) => {
                 'is_login': 1,
                 'isApproved': 1,
                 'specialization': 1,
-                'firmName':1,
-                'is_Online':1,
-                'experience':1
+                'firmName': 1,
+                'is_Online': 1,
+                'experience': 1
             }
         }])
         if (client) {
-            res.status(200).json({ message: "Data found", status: true, statusCode: 200, data: client, totalCount: client.length + 1})
+            let client = await LawyerModel.find({}).limit(limit).skip((page - 1) * limit);
+            res.status(200).json({ message: "Data found", status: true, statusCode: 200, data: client, totalCount: client.length + 1 })
         } else {
             res.status(400).json({ message: "Something Went Wrong", status: false, statusCode: 400 })
         }

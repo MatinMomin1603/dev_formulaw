@@ -16,6 +16,14 @@ const BlogSchema = new mongoose.Schema({
     link: {
         type: String
     },
+
+    status: {
+        type: Boolean
+    },
+
+    type: {
+        type: String
+    },
     img: {
         type: String
     },
