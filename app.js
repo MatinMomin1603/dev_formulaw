@@ -12,7 +12,7 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 const db = require("./config/db");
-const { authRouter, questionRouter, answerRouter, articalRouter, bannerRouter, lawyerRouter, langRouter, statecityRouter, adminRouter, userRouter, specialityRouter, sessionRouter, customerSupportRouter, askQuestionRouter } = require('./app/src')
+const { authRouter, questionRouter, answerRouter, articalRouter, bannerRouter, lawyerRouter, langRouter, statecityRouter, adminRouter, userRouter, specialityRouter, sessionRouter, customerSupportRouter, askQuestionRouter, customerSupportTypeRouter } = require('./app/src')
 
 app.get("/", (req, res) => {
     res.status(200).send("Welcome to Formulaw 1.0 !");
@@ -33,6 +33,7 @@ app.use('/session',  sessionRouter);
 app.use('/admin/lawyer',  lawyerRouter);
 app.use('/support',  customerSupportRouter);
 app.use('/askQuestion',  askQuestionRouter);
+app.use('/customerSupportTypes',  customerSupportTypeRouter);
 
 
 

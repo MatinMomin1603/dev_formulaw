@@ -1,8 +1,6 @@
 const mongoose = require('mongoose')
 
 const consultation = new mongoose.Schema({
-
-
     question: {
         type: String
     },
@@ -11,8 +9,8 @@ const consultation = new mongoose.Schema({
         type: String
     },
 
-    type: {
-        type: String
+    typeId: {
+        type: mongoose.Schema.Types.ObjectId
     },
 
     createdOn: {

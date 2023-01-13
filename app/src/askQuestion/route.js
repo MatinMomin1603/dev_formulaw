@@ -28,38 +28,37 @@ router.post('/',isValidToken, async(req, res) => {
     }
 });
 
-router.get('/',isValidToken,async(req,res)=>{
-try {
-const {userId}= req.query;
-let matchQuery = {};
-if(userId)
-  matchQuery.userId = mongoose.Types.ObjectId(userId);
-  let data =  await askQuestion.aggregate([
-      {
-          '$match': matchQuery
+router.get('/', isValidToken, async(req, res) => {
+    try {
+
+        let count = await askQuestion.find().count()
+        let data = await askQuestion.aggregate([{
+            '$match': {
+                'userId': mongoose.Types.ObjectId(req.query.userId)
+            }
+        }, {
+            '$skip': (req.query.page - 1) * 10
+        }, {
+            '$limit': req.query.limit * 1
         }, {
             '$project': {
-                'question': 1, 
-                'isAnswered': 1, 
-                'userId': 1, 
-                'createdOn': 1, 
+                'question': 1,
+                'isAnswered': 1,
+                'userId': 1,
+                'createdOn': 1,
                 'answeredOn': 1
             }
+        }])
+        if (data) {
+            res.status(200).json({ message: "Data Found Successfully", status: 200, statusCode: 200, data: data, totalCount: count })
+        } else {
+            res.status(400).json({ message: "Something Went Wrong", status: 400, statusCode: 400 })
         }
-    ]);
-    console.log('data :', data);
-    if (data) {
-        res.status(200).json({ message: "Data Found Successfully", status: 200, statusCode: 200, data: data })
-    } else {
-        res.status(400).json({ message: "Something Went Wrong", status: 400, statusCode: 400 })
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Something Went Wrong", status: 500, statusCode: 500 })
     }
-    
-} catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Something Went Wrong", status: 500, statusCode: 500 })
-}
-
-
 });
 
 router.put('/',isValidToken, async(req,res)=>{
