@@ -11,6 +11,12 @@ const answerSchema = mongoose.Schema({
             questionId: {
             type: mongoose.Schema.Types.ObjectId
             },
+            question: {
+                type:String
+            },
+            option: {
+                type:String
+            },
             optionId: {
             type: mongoose.Schema.Types.ObjectId
             },
@@ -21,7 +27,10 @@ const answerSchema = mongoose.Schema({
                 type: Date,
                 default: new Date()
             }
-        }]
+        }],
+        createdOn: {
+            type: Date
+        }
 });
 
 module.exports = mongoose.model('answers',answerSchema);

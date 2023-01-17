@@ -85,11 +85,15 @@ router.get('/getBanner',isValidToken, async(req, res) => {
 
         let client = await banner.aggregate([{
             '$match': {
-                '$or': [{
-                    'type': req.query.type
-                }, {
-                    'type': 3
-                }]
+                $and: [
+                    {'status': true},{
+                        '$or': [{
+                            'type': req.query.type
+                        }, {
+                            'type': 3
+                        }]
+                    }
+                ]
             }
         }, {
             '$project': {
@@ -102,7 +106,8 @@ router.get('/getBanner',isValidToken, async(req, res) => {
                 },
                 'createdOn': 1,
                 'updatedOn': 1,
-                'type': 1
+                'type': 1,
+                'status': 1
             }
         }])
         if (client) {

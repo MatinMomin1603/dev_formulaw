@@ -18,13 +18,13 @@ router.post('/',isValidToken, async(req, res) => {
 
         let ask_question = await data.save();
         if (ask_question) {
-            res.status(200).json({ message: "Question Sent Sucessfully", status: 200, statusCode: 200, data: ask_question })
+            res.status(200).json({ message: "Question Sent Sucessfully", status: true, statusCode: 200, data: ask_question })
         } else {
-            res.status(400).json({ message: "Something Went Wrong", status: 400, statusCode: 400 })
+            res.status(400).json({ message: "Something Went Wrong", status: false, statusCode: 400 })
         }
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Something Went Wrong", status: 500, statusCode: 500 })
+        res.status(500).json({ message: "Something Went Wrong", status: false, statusCode: 500 })
     }
 });
 
@@ -50,14 +50,42 @@ router.get('/', isValidToken, async(req, res) => {
             }
         }])
         if (data) {
-            res.status(200).json({ message: "Data Found Successfully", status: 200, statusCode: 200, data: data, totalCount: count })
+            res.status(200).json({ message: "Data Found Successfully", status: true, statusCode: 200, data: data, totalCount: count })
         } else {
-            res.status(400).json({ message: "Something Went Wrong", status: 400, statusCode: 400 })
+            res.status(400).json({ message: "Something Went Wrong", status: false, statusCode: 400 })
         }
 
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Something Went Wrong", status: 500, statusCode: 500 })
+        res.status(500).json({ message: "Something Went Wrong", status: false, statusCode: 500 })
+    }
+});
+
+router.get('/forUser', isValidToken, async(req, res) => {
+    try {
+
+        let data = await askQuestion.aggregate([{
+            '$match': {
+                'userId': mongoose.Types.ObjectId(req.query.userId)
+            }
+        },{
+            '$project': {
+                'question': 1,
+                'isAnswered': 1,
+                'userId': 1,
+                'createdOn': 1,
+                'answeredOn': 1
+            }
+        }])
+        if (data) {
+            res.status(200).json({ message: "Data Found Successfully", status: true, statusCode: 200, data: data })
+        } else {
+            res.status(400).json({ message: "Something Went Wrong", status: false, statusCode: 400 })
+        }
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Something Went Wrong", status: false, statusCode: 500 })
     }
 });
 

@@ -125,7 +125,7 @@ router.post('/signup', async(req, res) => {
 });
 
 
-router.delete('/',async(req,res)=>{
+router.delete('/', async(req,res)=>{
     try {
         const getPath = await LawyerModel.findOne({_id: mongoose.Types.ObjectId(req.body._id)});
         if(getPath._id){
@@ -172,15 +172,26 @@ router.get('/getLawyers', async(req, res) => {
 
 router.get('/list', isValidToken, async(req, res) => {
     try {
-        const { status, is_Online, page, limit } = req.query;
+        const { status, is_Online, page, limit,search } = req.query;
         let match = {}
         if (is_Online)
             match.is_Online = (is_Online.toLowerCase() === 'true');
         if (status)
             match.isApproved = status;
-
-        let client = await LawyerModel.aggregate([{
-            '$match': match
+         let totalCount = await LawyerModel.find().count();
+        let lawyerList = await LawyerModel.aggregate([{
+            '$match':  
+            {
+                '$and': [
+                match,
+                {
+                 '$or': [
+                     { 'name': { $regex: search+'', '$options': 'i' } },
+                     { 'specialization.name': { $regex: search+'', '$options': 'i' } },
+                 ]
+                }
+             ]
+            }
         }, {
             '$project': {
                 'firstName': 1,
@@ -199,12 +210,48 @@ router.get('/list', isValidToken, async(req, res) => {
                 'specialization': 1,
                 'firmName': 1,
                 'is_Online': 1,
-                'experience': 1
+                'experience': 1,
+                'resume': {
+                    '$cond': {
+                      'if': {
+                        '$eq': [
+                          '$resume', ''
+                        ]
+                      }, 
+                      'then': null, 
+                      'else': {
+                        '$concat': [
+                          'https://formulaw.s3.ap-south-1.amazonaws.com/', '$resume'
+                        ]
+                      }
+                    }
+                  },
+                'lawyerimage': {
+                    '$cond': {
+                      'if': {
+                        '$eq': [
+                          '$lawyerimage', ''
+                        ]
+                      }, 
+                      'then': null, 
+                      'else': {
+                        '$concat': [
+                          'https://formulaw.s3.ap-south-1.amazonaws.com/', '$lawyerimage'
+                        ]
+                      }
+                    }
+                  }
             }
-        }])
-        if (client) {
-            let client = await LawyerModel.find({}).limit(limit).skip((page - 1) * limit);
-            res.status(200).json({ message: "Data found", status: true, statusCode: 200, data: client, totalCount: client.length + 1 })
+        },{
+            '$skip': (page - 1) * 10
+        },{
+            '$limit': limit * 1
+        }]);
+
+        console.log('lawyerList :', lawyerList);
+
+        if (lawyerList) {
+            res.status(200).json({ message: lawyerList.length? "Data found": "No Data Found", status: true, statusCode: 200, data: lawyerList, totalCount: totalCount })
         } else {
             res.status(400).json({ message: "Something Went Wrong", status: false, statusCode: 400 })
         }
@@ -214,6 +261,74 @@ router.get('/list', isValidToken, async(req, res) => {
         res.status(500).json({ message: "Something Went Wrong", status: false, statusCode: 500 })
     }
 });
+
+router.get('/lawyerlist',async(req,res)=>{
+    try {
+        let count= await LawyerModel.find().count()
+        console.log(count);
+        let client= await LawyerModel.aggregate([
+            {
+              '$match': {
+                '$and': [
+                  {
+                    'isApproved': {
+                      '$eq': 'approved'
+                    }
+                  }, {
+                    '$or': [
+                        { 'name': { $regex: req.query.search, '$options': 'i' } },
+                        { 'specialization.name': { $regex: req.query.search, '$options': 'i' } },
+                    ]
+                  }
+                ]
+              }
+            }, {
+              '$project': {
+                'name': 1, 
+                'email': 1, 
+                'phoneNo': 1, 
+                'state': 1, 
+                'city': 1, 
+                'langauge': 1, 
+                'login_last': 1, 
+                'is_login': 1, 
+                'isApproved': 1, 
+                'resume': {
+                  '$cond': {
+                    'if': {
+                      '$eq': [
+                        '$resume', ''
+                      ]
+                    }, 
+                    'then': null, 
+                    'else': {
+                      '$concat': [
+                        'https://formulaw.s3.ap-south-1.amazonaws.com/', '$resume'
+                      ]
+                    }
+                  }
+                }, 
+                'specialization': 1, 
+                'is_Online': 1
+              }
+            }, {
+              '$skip': (req.query.page-1)*10
+            }, {
+              '$limit': req.query.limit*1
+            }
+          ]);
+          if(client){
+        let count= await LawyerModel.find().count()
+        res.status(200).json({message:"Data Found...!",status:true,statusCode:200,data:client, totalcount:count})
+          }else{
+            res.status(400).json({message:"Something Went Wrong",status:false,statusCode:400})
+          }
+    } catch (error) {
+        res.status(500).json({message:"Something Went Wrong...!",status:false,statusCode:500})
+        
+    }
+})
+
 
 router.put('/updateStatus',  async(req, res) => {
     try {
@@ -265,6 +380,10 @@ router.put('/editLawyer', isValidToken, async(req, res) => {
         }
         let client = await LawyerModel.findByIdAndUpdate({ _id: mongoose.Types.ObjectId(_id) }, { name: name, email: email, firmName: firmName, state: state, city: city, specialization: specialization, lawyerimage: profile_path, langauge: langauge, resume: resume_path, updatedOn: new Date() }, { new: true })
         if (client) {
+            if(client.lawyerimage)
+                client.lawyerimage = 'https://formulaw.s3.ap-south-1.amazonaws.com/' + client.lawyerimage
+            if(client.resume)
+                client.resume = 'https://formulaw.s3.ap-south-1.amazonaws.com/' + client.resume;
             res.status(200).json({ message: "Lawyer Updated Sucessfully..!", status: true, statusCode: 200, data: client })
         } else {
             res.status(400).json({ message: "Something Went Wrong", status: false, statusCode: 400 })
