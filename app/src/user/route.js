@@ -25,10 +25,7 @@ router.put('/', isValidToken, async(req, res) => {
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: "somethig went wrong", status: false, statuscode: 500 })
-
     }
-
-
 })
 
 router.get('/getusers', async(req, res) => {
